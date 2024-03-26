@@ -1,0 +1,20 @@
+Benchmark Papers:
+https://arxiv.org/pdf/2305.00735.pdf
+https://arxiv.org/pdf/2206.09426.pdf
+
+Frameworks:
+https://github.com/yzhao062/pyod
+https://github.com/xuhongzuo/DeepOD
+
+Recommended Book:
+Outlier Analysis (2017, Aggarwal) https://link.springer.com/book/10.1007/978-3-319-47578-3 
+
+
+Master Thesis will be provided at 28.03.2024
+
+Ideas for expanding the work:
+- Better categorical encoding
+- Better feature creation
+- Other Anomaly Detection Models
+- Machine Learning for correction of anomalies
+- Just be open minded and try different things out!
