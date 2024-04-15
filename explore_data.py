@@ -78,6 +78,29 @@ def draw_violin_plots(df, column1, column2):
     plt.tight_layout()
 
     plt.show()
+ 
+def draw_Mult_violin_plots(df):
+    # Get the list of column names
+    columns = df.columns
+    
+    # Determine the number of rows and columns for the subplot grid
+    num_plots_per_page = 4
+    num_rows = math.ceil(num_plots_per_page / 2)
+    num_cols = 2
+
+    # Iterate over features and create violin plots
+    for i in range(0, len(columns), num_plots_per_page):
+        # Create a new figure for every 6 plots
+        plt.figure(figsize=(15, 10))
+        
+        # Iterate over the next 6 features
+        for j, column in enumerate(columns[i:i+num_plots_per_page], 1):
+            plt.subplot(num_rows, num_cols, j)
+            sns.violinplot(data=df[[column]], orient='v', color='lime')
+            plt.title(f'Violin Plot of {column}',fontsize=8)
+
+        plt.tight_layout()
+        plt.show()   
 
 def draw_density_plots(df, column1, column2):
     df2 = df[[column1, column2]].copy()
@@ -162,11 +185,12 @@ def visualize_correlated_scatterplots(df):
             plt.show()
 
 
-corr_matrix(df)
-visualize_correlated_scatterplots(df)
+#corr_matrix(df)
+#visualize_correlated_scatterplots(df)
 # plot_histograms(df, 'Planlieferzeit Vertrag', 'Vertrag Fix1')
 # draw_box_plots(df, 'Planlieferzeit Vertrag', 'Vertrag Fix1')
 # draw_violin_plots(df, 'Planlieferzeit Vertrag', 'Vertrag Fix1')
+draw_Mult_violin_plots(df)
 # draw_density_plots(df, 'Planlieferzeit Vertrag', 'Vertrag Fix1')
 # draw_scatter_plot(df, 'Planlieferzeit Vertrag', 'Vertrag Fix1')
 # plot_top10_common_values(df, 'Planlieferzeit Vertrag', 'Vertrag Fix1')
