@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Daten einlesen
-df = pd.read_csv("../Stammdaten.csv", low_memory=False)
+df = pd.read_csv("Stammdaten.csv", low_memory=False)
 
 print(f"Max value: {min(df['Gesamtwert'])}")
 print(f"Min value: {max(df['Gesamtwert'])}")
