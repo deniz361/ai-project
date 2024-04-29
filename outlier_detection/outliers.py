@@ -45,10 +45,12 @@ def plot_all_columns(df):
         ax = axes[i]
         if df[col].dtype == 'object':
             value_counts = df[col].value_counts()
-            ax.bar(value_counts.index, value_counts.values, width=0.8)
+            ax.bar(range(len(value_counts)), value_counts.values, width=0.8)
             ax.set_title(f"Barplot of {col}")
             ax.set_xlabel(col)
             ax.set_ylabel("Count")
+            ax.set_xticks(range(len(value_counts)))
+            ax.set_xticklabels(value_counts.index)
             ax.tick_params(axis='x', rotation=45)
         else:
             ax.boxplot(df[col].dropna(), vert=False)
@@ -65,7 +67,7 @@ def plot_all_columns(df):
 
 # Read dataset
 df = pd.read_csv('../Stammdaten.csv', low_memory=False)
-df = df.sample(frac=0.25, random_state=42)
+df = df.sample(frac=0.1, random_state=42)
 
 # Change falsely recognized datatypes
 df['Lieferant OB'] = df['Lieferant OB'].astype('object')
@@ -85,14 +87,20 @@ df['Infosatztyp'] = df['Infosatztyp'].astype('object')
 df['WE-Bearbeitungszeit'] = df['WE-Bearbeitungszeit'].astype('object')
 
 
+# Plot all columns on a 5 by 5 grid
+# plot_all_columns(df)
+
+
+# Some elimination
 print(df.shape)
 df = df[df['Gesamtbestand'] != 0]
 print(df.shape)
-df = df[df['Gesamtbestand'] < 5_000_000]
+df = df[df['Gesamtbestand'] < 1_000_000]
 print(df.shape)
 df = df[df['Gesamtwert'] < 6_000_000]
 print(df.shape)
-
+df = df[df['Planlieferzeit Mat-Stamm'] < 400]
+print(df.shape)
 
 # Get column descriptions
 column_description(df)
