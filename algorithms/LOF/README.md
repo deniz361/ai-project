@@ -1,0 +1,4 @@
+- LOF seems to be a promising approach, when combined with one hot encoding for categorical columns.
+- 2101 columns are being generated after one hot encoding.
+- can handle only 10% of the dataset at a time, since computing LOF is memory-expensive
+- Need to do more research and come up with a way to evaluate this approach
