@@ -1,0 +1,1 @@
+- DBSCAN requires the data to be numerical, which is not ideal for our usecase, since we have a lot of categorical columns
