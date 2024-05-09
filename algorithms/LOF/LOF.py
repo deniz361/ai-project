@@ -22,7 +22,7 @@ def sample_and_save_data(original_data, sample_fraction=0.1, random_state=42, fi
     sampled_data.to_csv(file_path, index=False)
     return sampled_data
 
-def load_data_and_run_lof(file_path, n_neighbors=20, contamination=0.1):
+def load_data_and_run_lof(file_path, n_neighbors=10, contamination=0.1):
     """
     Load the sampled data from a CSV file, run the Local Outlier Factor (LOF) algorithm,
     and return anomalies detected along with the LOF scores.
@@ -59,9 +59,12 @@ def preprocess_data(data):
     - processed_data: pandas DataFrame containing imputed missing values, one-hot encoded features, and normalized features
     """
     # Separate numeric and categorical columns
-    numeric_cols = data.select_dtypes(include=np.number).columns
-    categorical_cols = data.select_dtypes(include='object').columns
+    # numeric_cols = data.select_dtypes(include=np.number).columns
+    # categorical_cols = data.select_dtypes(include='object').columns
 
+    categorical_cols = ["Materialnummer", "Lieferant OB", "Vertragsposition OB", "Beschaffungsart", "Disponent", "Einkäufer", "Dispolosgröße", "Werk OB", "Warengruppe", "Basiseinheit"]
+    numeric_cols = ["Planlieferzeit Vertrag", "Vertrag Fix1", "Vertrag_Fix2", "Gesamtbestand", "Gesamtwert", "Preiseinheit", "WE-Bearbeitungszeit", "Planlieferzeit Mat-Stamm"]
+    
     # Impute missing values using mean imputation for numeric columns
     imputer = SimpleImputer(strategy='mean')
     data_numeric_imputed = pd.DataFrame(imputer.fit_transform(data[numeric_cols]), columns=numeric_cols)
@@ -112,7 +115,7 @@ def detect_anomalies_LOF(data, n_neighbors=20, contamination=0.1):
     return anomalies, lof_scores
 
 # Load the original dataset
-file_path = 'Stammdaten.csv'
+file_path = 'ai-project/datasets/Stammdaten.csv'
 original_data = pd.read_csv(file_path, low_memory=False)
 
 # Sample and save the data
