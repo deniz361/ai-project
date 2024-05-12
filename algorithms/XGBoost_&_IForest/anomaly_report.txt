@@ -1,0 +1,35 @@
+Anomaly Ratios:
+Vertrag_Fix2_outlier: 0.03
+Preiseinheit_outlier: 0.02
+Vertrag Fix1_outlier: 0.02
+Planlieferzeit Vertrag_outlier: 0.01
+WE-Bearbeitungszeit_outlier: 0.01
+Gesamtwert_outlier: 0.00
+Gesamtbestand_outlier: 0.00
+Planlieferzeit Mat-Stamm_outlier: 0.00
+
+Most Bizarre Values:
+Planlieferzeit Vertrag: 392
+Description: This value might occur due to ...
+
+Vertrag Fix1: 154
+Description: This value might occur due to ...
+
+Vertrag_Fix2: 280
+Description: This value might occur due to ...
+
+Gesamtbestand: 59371444
+Description: This value might occur due to ...
+
+Gesamtwert: 115344675
+Description: This value might occur due to ...
+
+Preiseinheit: 10000
+Description: This value might occur due to ...
+
+WE-Bearbeitungszeit: 56
+Description: This value might occur due to ...
+
+Planlieferzeit Mat-Stamm: 999
+Description: This value might occur due to ...
+
