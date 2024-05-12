@@ -10,26 +10,25 @@ Planlieferzeit Mat-Stamm_outlier: 0.00
 
 Most Bizarre Values:
 Planlieferzeit Vertrag: 392
-Description: This value might occur due to ...
+Description: This value might occur due to being heighest value which is outside normal range
 
 Vertrag Fix1: 154
-Description: This value might occur due to ...
+Description: This value might occur due to being heighest value which is outside normal range
 
 Vertrag_Fix2: 280
-Description: This value might occur due to ...
+Description: This value might occur due to same reason as above.
 
 Gesamtbestand: 59371444
-Description: This value might occur due to ...
+Description: This value might occur due to the value being too big, on average the number lies within 5 digits number.
 
 Gesamtwert: 115344675
-Description: This value might occur due to ...
+Description: This value might occur due to the value being too big, on average the number lies within 7 digits number.
 
 Preiseinheit: 10000
-Description: This value might occur due to ...
+Description: This value might occur due to typo mistake, because the values are either 1 or 100 so it might be mistakely typed.
 
 WE-Bearbeitungszeit: 56
-Description: This value might occur due to ...
+Description: This value might occur due to being outside normal range, the heighest value inthis category is 40.
 
 Planlieferzeit Mat-Stamm: 999
-Description: This value might occur due to ...
-
+Description: This value is the most common however the algo has identified it bizarre, noermally the valus lies in the range of 0 to 100, then few withtin 150 range then most value are valued 999.
