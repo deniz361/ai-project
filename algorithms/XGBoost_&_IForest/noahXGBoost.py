@@ -20,7 +20,7 @@ categorical_columns = ["Material number", "Supplier", "Contract", "Contract Posi
                                     "Information record number", "Information record type",  "Product group",
                                     "Base unit"]
 numerical_columns = ["Fulfillment time", "Fixed contract 1", "Fixed contract 2", "Total quantity", "Total value", 
-                                  "Price unit", "Plant processing time", "Material master time"]
+                                  "Price unit", "Material master time", "Plant processing time"]
         
 
 
@@ -99,7 +99,7 @@ X = data.drop(columns=['anomaly_label'])
 y = data['anomaly_label']
 
 # Split data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Train XGBoost model
 xgb_model = xgb.XGBClassifier(objective='binary:logistic', random_state=42)
@@ -129,7 +129,7 @@ def visualize_anomalies(data, anomaly_labels):
     plt.ylabel('Total quantity')
     plt.title('Anomalies in Total Quantity')
     plt.colorbar(label='Anomaly Label')
-    plt.show()
+    #plt\.show\(\)
 
 # Assuming you have already predicted anomaly labels for the dataset
 # Replace 'anomaly_labels' with your actual anomaly labels
@@ -143,7 +143,7 @@ plt.title('Histogram of Z-scores for Total Inventory')
 plt.xlabel('Z-score')
 plt.ylabel('Frequency')
 plt.legend()
-plt.show()
+#plt\.show\(\)
 
 import seaborn as sns
 
@@ -153,7 +153,7 @@ import seaborn as sns
 #     # Pairplot for all numerical features
 #     sns.pairplot(data, hue=da'anomaly_labels', palette={0: 'blue', 1: 'red'})
 #     plt.title('Scatter Plot of Numerical Features with Anomalies')
-#     plt.show()
+#     #plt\.show\(\)
 
 # # Visualize anomalies
 # visualize_anomalies2(data[numerical_columns], y_pred)
@@ -167,11 +167,11 @@ plt.title('Histogram of Z-scores for Total Inventory')
 plt.xlabel('Z-score')
 plt.ylabel('Frequency')
 plt.legend()
-plt.show()
+#plt\.show\(\)
 
 
 # Find the top 5 columns with the most anomalies predicted by XGBoost
-top_5_columns = xgb_model.feature_importances_.argsort()[-5:][::-1]
+top_5_columns = xgb_model.feature_importances_.argsort()[-3:][::-1]
 
 # Plot the distributions of the top 5 most anomalous columns
 for col_index in top_5_columns:
@@ -183,7 +183,7 @@ for col_index in top_5_columns:
     plt.ylabel('Frequency')
     plt.legend()
     plt.savefig(f'{column_name}_distribution.png')
-    plt.show()
+    #plt\.show\(\)
 # Save the updated dataset
 data.to_csv('updated_with_anomalies_xgboost_stammdaten.csv', index=False)
 
@@ -196,35 +196,68 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 # Handling missing values by replacing them with the median of each column
-for col in numerical_columns:
-    if data[col].isna().any():
-        data[col].fillna(data[col].median(), inplace=True)
+# for col in numerical_columns:
+#     if data[col].isna().any():
+#         data[col].fillna(data[col].median(), inplace=True)
 
-# Applying Z-score for anomaly detection in numeric columns
-for col in numerical_columns:
-    data[col + '_z_score'] = np.abs(stats.zscore(data[col]))
-    data[col + '_outlier'] = 0
-    data.loc[data[col + '_z_score'] > 3, col + '_outlier'] = 1  # Any Z-score > 3 is considered an outlier
+# # Applying Z-score for anomaly detection in numeric columns
+# for col in numerical_columns:
+#     data[col + '_z_score'] = np.abs(stats.zscore(data[col]))
+#     data[col + '_outlier'] = 0
+#     data.loc[data[col + '_z_score'] > 3, col + '_outlier'] = 1  # Any Z-score > 3 is considered an outlier
 
-# Combine all outlier flags to a single anomaly label
-data['anomaly_label'] = data[[col + '_outlier' for col in numerical_columns]].max(axis=1)
+# # Combine all outlier flags to a single anomaly label
+# data['anomaly_label'] = data[[col + '_outlier' for col in numerical_columns]].max(axis=1)
+X = data.drop(columns=['anomaly_label'])
+# Train Isolation Forest model for anomaly detection
+from sklearn.impute import KNNImputer
+
+# Instantiate KNN imputer
+imputer = KNNImputer()
+
+# Impute missing values using KNN imputation
+X_imputed = imputer.fit_transform(X)
+y = data['anomaly_label']
+
+
+# Convert X_imputed into a DataFrame
+X_imputed = pd.DataFrame(X_imputed, columns=X.columns)
+
+
 
 # Train Isolation Forest model for anomaly detection
 if_model = IsolationForest(random_state=42)
-if_model.fit(data[numerical_columns])
-
+if_model.fit(X_imputed,y)
+not_processed_data=pd.DataFrame(not_processed_data)
 # Predict anomaly labels using Isolation Forest
-data['if_anomaly'] = if_model.predict(data[numerical_columns])
-data['if_anomaly'] = np.where(data['if_anomaly'] == -1, 1, 0)  # Convert -1 to 1 for anomaly, 1 to 0 for normal
+data2 = data.copy()
+not_processed_data['if_anomaly'] = if_model.predict(X_imputed)
+not_processed_data['if_anomaly'] = np.where(not_processed_data['if_anomaly'] == -1, 1, 0)  # Convert -1 to 1 for anomaly, 1 to 0 for normal
+# Convert -1 to 1 for anomaly, 1 to 0 for normal
+# Get anomaly scores for each sample
+anomaly_scores = if_model.decision_function(X_imputed)
 
+# Find the indices of the top 5 anomalies (lowest anomaly scores)
+top_5_anomalies_indices = np.argsort(anomaly_scores)[:50]
+
+# Get the corresponding rows (samples) from the original data
+top_5_anomalies_data = not_processed_data.iloc[top_5_anomalies_indices]
+# Save the top anomalies to a CSV file
+top_5_anomalies_data.to_csv('top_5_anomalies.csv', index=False)
+
+not_processed_data['if_anomaly'].to_csv('allanomaliIforest.csv', index=False)
 # Find the top 5 columns with the most anomalies predicted by Isolation Forest
-top_5_columns = np.argsort(np.sum(np.abs(if_model.decision_function(data[numerical_columns]))))
+top_5_columns = np.argsort(np.sum(np.abs(if_model.decision_function(X_imputed))))
+
+not_processed_data['if_anomaly'].iloc[top_5_anomalies_indices] = 1  # Convert anomalies to 1
+not_processed_data['if_anomaly'].fillna(0, inplace=True)  # Fill non-anomalies with 0
+
 
 # Plot the distributions of the top 5 most anomalous columns
 for col_index in top_5_columns[:5]:
     column_name = numerical_columns[col_index]
     plt.figure(figsize=(10, 6))
-    plt.hist(data[column_name], bins=50, label=f'Distribution of {column_name}')
+    plt.hist(not_processed_data[column_name], bins=50, label=f'Distribution of {column_name}')
     plt.title(f'Distribution of {column_name}')
     plt.xlabel(column_name)
     plt.ylabel('Frequency')
@@ -242,9 +275,9 @@ plt.figure(figsize=(15, 10))
 for col_index in range(len(numerical_columns)):
     column_name = numerical_columns[col_index]
     # Plot anomalies detected by XGBoost
-    plt.scatter(data[column_name][data['if_anomaly'] == 1], data[column_name][data['if_anomaly'] == 1], c='red', label='Anomaly')
-    # Plot normal data points
-    plt.scatter(data[column_name][data['if_anomaly'] == 0], data[column_name][data['if_anomaly'] == 0], c='blue', label='Normal')
+    plt.scatter(not_processed_data[column_name][not_processed_data['if_anomaly'] == 1], not_processed_data[column_name][not_processed_data['if_anomaly'] == 1], c='red', label='Anomaly')
+    # Plot normal not_processed_data points
+    plt.scatter(not_processed_data[column_name][not_processed_data['if_anomaly'] == 0], not_processed_data[column_name][not_processed_data['if_anomaly'] == 0], c='blue', label='Normal')
     plt.xlabel(column_name)
     plt.ylabel('Value')
     plt.title(f'Scatter Plot of {column_name}')
@@ -255,6 +288,7 @@ for col_index in range(len(numerical_columns)):
 
 # Calculate ratios of detected anomalies on each column
 anomaly_ratios = (data.filter(regex='_outlier$').sum() / len(data)).sort_values(ascending=False)
+print(anomaly_ratios)
 
 # Identify the most bizarre values of each column
 most_bizarre_values = {}
