@@ -40,11 +40,13 @@ def preprocess_data(data):
 
     return processed_data  
 
-file_path = 'datasets/Stammdaten.csv'
+file_path = 'datasets/sampled_data.csv'
 df = pd.read_csv(file_path, low_memory=False)
 
 Data=Data_Preprocessing(file_path=file_path)
-processed_data= preprocess_data(df)
+processed_data= Data.preprocess_data_kmean()
+
+
 print(processed_data)
 
 
