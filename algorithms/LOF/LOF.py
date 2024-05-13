@@ -40,14 +40,15 @@ def load_data_and_run_lof(file_path, n_neighbors=10, contamination=0.1):
     sampled_data = pd.read_csv(file_path)
 
     # Preprocess the sampled data
-    processed_sampled_data = preprocess_data(sampled_data)
+    processed_sampled_data = preprocess_step1(sampled_data)
 
+    processed_sampled_data = preprocess_step2(processed_sampled_data)
     # Detect anomalies using LOF
     anomalies, lof_scores = detect_anomalies_LOF(processed_sampled_data, n_neighbors=n_neighbors, contamination=contamination)
 
     return anomalies, lof_scores
 
-def preprocess_data(data):
+def preprocess_step1(data):
     """
     Preprocess the data by imputing missing values, performing one-hot encoding for categorical variables,
     and performing feature normalization.
@@ -58,18 +59,36 @@ def preprocess_data(data):
     Returns:
     - processed_data: pandas DataFrame containing imputed missing values, one-hot encoded features, and normalized features
     """
-    # Separate numeric and categorical columns
-    # numeric_cols = data.select_dtypes(include=np.number).columns
-    # categorical_cols = data.select_dtypes(include='object').columns
-
-    categorical_cols = ["Materialnummer", "Lieferant OB", "Vertragsposition OB", "Beschaffungsart", "Disponent", "Einkäufer", "Dispolosgröße", "Werk OB", "Warengruppe", "Basiseinheit"]
-    numeric_cols = ["Planlieferzeit Vertrag", "Vertrag Fix1", "Vertrag_Fix2", "Gesamtbestand", "Gesamtwert", "Preiseinheit", "WE-Bearbeitungszeit", "Planlieferzeit Mat-Stamm"]
+    # Rename all columns to English
+    data.rename(columns={"Materialnummer": "Material number", "Lieferant OB": "Supplier", "Vertrag OB": "Contract", 
+                         "Vertragsposition OB": "Contract Position", "Planlieferzeit Vertrag": "Fulfillment time", 
+                         "Vertrag Fix1": "Fixed contract 1", "Vertrag_Fix2": "Fixed contract 2", "Beschaffungsart": 
+                         "Procurement type", "Sonderbeschaffungsart": "Special procurement type", "Disponent":
+                         "Dispatcher", "Einkäufer": "Buyer", "DispoGruppe": "Purchasing group", "Dispolosgröße": 
+                         "Purchasing lot size", "Gesamtbestand": "Total quantity", "Gesamtwert": "Total value",
+                         "Preiseinheit": "Price unit", "Kalender": "Calendar", "Werk OB": "Plant", "Werk Infosatz":
+                         "Plant information record", "Infosatznummer": "Information record number", "Infosatztyp":
+                         "Information record type", "WE-Bearbeitungszeit": "Plant processing time", "Planlieferzeit Mat-Stamm":
+                         "Material master time", "Warengruppe": "Product group", "Basiseinheit": "Base unit"}, inplace=True)
     
-    # Impute missing values using mean imputation for numeric columns
-    imputer = SimpleImputer(strategy='mean')
-    data_numeric_imputed = pd.DataFrame(imputer.fit_transform(data[numeric_cols]), columns=numeric_cols)
+    # Separate numeric and categorical columns
+    numeric_cols = ["Fulfillment time", "Fixed contract 1", "Fixed contract 2", "Total quantity", "Total value", "Price unit", "Plant processing time", "Material master time"]
+    
+    # Replace 0s with NaN in specific columns
+    columns_to_replace_nan = ["Fulfillment time", "Material master time", "Plant processing time", "Total quantity", "Total value", "Fixed contract 1", "Fixed contract 2"]
+    data[columns_to_replace_nan] = data[columns_to_replace_nan].replace(0, np.nan)
+    print (data.head())
 
+    return data
+
+def preprocess_step2(data):
+    numeric_cols = ["Fulfillment time", "Fixed contract 1", "Fixed contract 2", "Total quantity", "Total value", "Price unit", "Plant processing time", "Material master time"]
+    # Impute missing values using mean imputation for numeric columns
+    imputer = SimpleImputer(strategy='most_frequent')
+    data_numeric_imputed = pd.DataFrame(imputer.fit_transform(data[numeric_cols]), columns=numeric_cols)
+    
     # One-hot encode categorical variables
+    categorical_cols = ["Material number", "Supplier", "Contract Position", "Procurement type", "Dispatcher", "Buyer", "Purchasing lot size", "Plant", "Product group", "Base unit"]
     if len(categorical_cols) > 0:
         encoder = OneHotEncoder(drop='first')
         data_encoded = encoder.fit_transform(data[categorical_cols])
@@ -87,7 +106,7 @@ def preprocess_data(data):
 
     return processed_data
 
-def detect_anomalies_LOF(data, n_neighbors=20, contamination=0.1):
+def detect_anomalies_LOF(data, n_neighbors=10, contamination=0.05):
     """
     Detect anomalies using Local Outlier Factor (LOF) algorithm.
 
@@ -115,25 +134,23 @@ def detect_anomalies_LOF(data, n_neighbors=20, contamination=0.1):
     return anomalies, lof_scores
 
 # Load the original dataset
-file_path = 'ai-project/datasets/Stammdaten.csv'
+file_path = 'datasets/Stammdaten.csv'
 original_data = pd.read_csv(file_path, low_memory=False)
 
 # Sample and save the data
 sampled_data = sample_and_save_data(original_data)
+processed_data = preprocess_step1(sampled_data)
+processed_data.to_csv('processed_data.csv', index=False)
 
 # Load the sampled data, run LOF, and detect anomalies
 anomalies, lof_scores = load_data_and_run_lof('sampled_data.csv')
 
 # Create a new column "anomaly" in the sampled data DataFrame
-sampled_data['anomaly'] = np.where(lof_scores < 0, 1, 0)
-
+processed_data['anomaly'] = np.where(lof_scores < 0, 1, 0)
+print(processed_data.head())
 # Save the sampled data with the "anomaly" column as CSV
-sampled_data.to_csv('sampled_data_with_anomalies.csv', index=False)
+processed_data.to_csv('processed_data_with_anomalies.csv', index=False)
 
-print("Anomalies:")
-print(anomalies)
-print("\nLOF scores:")
-print(lof_scores)
 
 # Print indices of the sampled data DataFrame
 print("Indices of sampled data:")
