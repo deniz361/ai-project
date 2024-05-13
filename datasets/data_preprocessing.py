@@ -96,7 +96,14 @@ class Data_Preprocessing():
         #data = data[numerical_columns]
 
         self.data=self.preprocess_data()
+        from sklearn.impute import KNNImputer
 
+        # Instantiate KNN imputer
+        imputer = KNNImputer()
+
+        # Impute missing values using KNN imputation
+        data_numeric_imputed = imputer.fit_transform(self.data[self.numerical_columns])
+        data_numeric_imputed= pd.DataFrame(data_numeric_imputed,columns=self.numerical_columns)
         not_scaled_data = self.data.copy()
 
         # categorical_cols = ["Materialnummer", "Lieferant OB", "Vertragsposition OB", "Beschaffungsart", "Disponent", "Einkäufer", "Dispolosgröße", "Werk OB", "Warengruppe", "Basiseinheit"]
@@ -116,7 +123,7 @@ class Data_Preprocessing():
             data_imputed_encoded = pd.DataFrame()
 
         # Combine numeric and encoded categorical columns
-        processed_data = pd.concat([self.data[self.numerical_columns], data_imputed_encoded], axis=1)
+        processed_data = pd.concat([data_numeric_imputed, data_imputed_encoded], axis=1)
 
 
         # Normalize features
