@@ -95,7 +95,7 @@ def preprocess_data(data):
 
     return processed_data           
             
-file_path = 'Stammdaten.csv'
+file_path = 'datasets/Stammdaten.csv'
 df = pd.read_csv(file_path, low_memory=False)
 processed_df = preprocess_data(df)
 # print_unique_values_by_dtype(df) 

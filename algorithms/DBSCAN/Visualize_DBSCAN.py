@@ -124,7 +124,8 @@ def visualize_anomaly_heatmap(df, top_n=2, grid_size=10, correlation_threshold=0
 
             processed_pairs.add((feature1, feature2))  # Add the processed pair to the set
 
-        # Hide empty subplots
+        # Hide empty subplots42	0	0	350	66346	1	1	42	1
+
         for j in range(i + 1, num_rows * num_cols):
             axes.flatten()[j].axis('off')
 

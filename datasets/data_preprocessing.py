@@ -1,12 +1,14 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 
 
 class Data_Preprocessing():
     def __init__(self, file_path) -> None:
-        self.data = pd.read_csv(file_path, low_memory=False)
+        self.data = pd.read_csv(file_path, low_memory=False, nrows=3000)
         
         self.rename_to_english()
         
@@ -76,3 +78,50 @@ class Data_Preprocessing():
 
         return data_without_nan
     
+    def preprocess_data_kmean(self):
+        """
+        Preprocess the data by imputing missing values, performing one-hot encoding for categorical variables,
+        and performing feature normalization.
+
+        Parameters:
+        - data: pandas DataFrame containing the dataset
+
+        Returns:
+        - processed_data: pandas DataFrame containing imputed missing values, one-hot encoded features, and normalized features
+        """
+        # Separate numeric and categorical columns
+        # numeric_cols = data.select_dtypes(include=np.number).columns
+        # categorical_cols = data.select_dtypes(include='object').columns
+
+        #data = data[numerical_columns]
+
+        self.data=self.preprocess_data()
+
+        not_scaled_data = self.data.copy()
+
+        # categorical_cols = ["Materialnummer", "Lieferant OB", "Vertragsposition OB", "Beschaffungsart", "Disponent", "Einkäufer", "Dispolosgröße", "Werk OB", "Warengruppe", "Basiseinheit"]
+        # numeric_cols = ["Planlieferzeit Vertrag", "Vertrag Fix1", "Vertrag_Fix2", "Gesamtbestand", "Gesamtwert", "Preiseinheit", "WE-Bearbeitungszeit", "Planlieferzeit Mat-Stamm"]
+        
+        # Impute missing values using mean imputation for numeric columns
+        # imputer = SimpleImputer(strategy='mean')
+        # data_numeric_imputed = pd.DataFrame(imputer.fit_transform(self.data[self.numerical_columns]), columns=self.numerical_columns)
+
+        # One-hot encode categorical variables
+        if len(self.categorical_columns) > 0:
+            encoder = OneHotEncoder(drop='first')
+            data_encoded = encoder.fit_transform(self.data[self.categorical_columns])
+            column_names = encoder.get_feature_names_out(self.categorical_columns)
+            data_imputed_encoded = pd.DataFrame(data_encoded.toarray(), columns=column_names)
+        else:
+            data_imputed_encoded = pd.DataFrame()
+
+        # Combine numeric and encoded categorical columns
+        processed_data = pd.concat([self.data[self.numerical_columns], data_imputed_encoded], axis=1)
+
+
+        # Normalize features
+        scaler = StandardScaler()
+        processed_data = pd.DataFrame(scaler.fit_transform(processed_data), columns=processed_data.columns)
+
+
+        return processed_data, not_scaled_data
