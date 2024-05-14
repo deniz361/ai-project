@@ -111,6 +111,80 @@ y_pred = xgb_model.predict(X)  # Binary prediction (0 or 1)
 
 # You can now use y_pred_proba or y_pred for further analysis or evaluation
 
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, precision_recall_curve, confusion_matrix, roc_auc_score, average_precision_score
+
+# ROC Curve
+fpr, tpr, _ = roc_curve(y, y_pred_proba)
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='blue', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_score(y, y_pred_proba))
+plt.plot([0, 1], [0, 1], color='gray', lw=1, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend(loc="lower right")
+plt.show()
+
+# Precision-Recall Curve
+precision, recall, _ = precision_recall_curve(y, y_pred_proba)
+plt.figure(figsize=(8, 6))
+plt.plot(recall, precision, color='blue', lw=2, label='Precision-Recall curve (AP = %0.2f)' % average_precision_score(y, y_pred_proba))
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend(loc="lower left")
+plt.show()
+
+# Confusion Matrix
+cm = confusion_matrix(y, y_pred)
+plt.figure(figsize=(8, 6))
+plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+plt.title('Confusion Matrix')
+plt.colorbar()
+plt.xticks([0, 1], ['Normal', 'Anomaly'])
+plt.yticks([0, 1], ['Normal', 'Anomaly'])
+plt.xlabel('Predicted label')
+plt.ylabel('True label')
+plt.show()
+
+
+# Feature Importance Plot (for top 5 features)
+top_n = 5  # Specify the number of top features to plot
+top_features_indices = xgb_model.feature_importances_.argsort()[-top_n:][::-1]
+top_feature_names = X.columns[top_features_indices]
+
+plt.figure(figsize=(10, 6))
+plt.barh(range(len(top_features_indices)), xgb_model.feature_importances_[top_features_indices], align='center')
+plt.yticks(range(len(top_features_indices)), top_feature_names)
+plt.xlabel('Feature Importance')
+plt.ylabel('Feature')
+plt.title(f'Top {top_n} Feature Importance Plot')
+plt.show()
+
+# Anomaly Score Distribution
+plt.figure(figsize=(8, 6))
+plt.hist(y_pred_proba, bins=50, color='blue', alpha=0.7)
+plt.xlabel('Anomaly Score')
+plt.ylabel('Frequency')
+plt.title('Anomaly Score Distribution')
+plt.show()
+
+plt.figure(figsize=(12, 8))
+plt.scatter(X.iloc[:, 3], X.iloc[:, 4], c=y_pred, cmap='coolwarm', s=50, alpha=0.7)
+plt.xlabel(X.columns[4])  # Use the first feature name as x-axis label
+plt.ylabel(X.columns[3])  # Use the second feature name as y-axis label
+plt.title('Scatter Plot with Anomaly Labels')
+plt.colorbar()
+plt.show()
+
+# Scatter Plot with Anomaly Labels
+plt.figure(figsize=(12, 8))
+plt.scatter(X.iloc[:, 0], X.iloc[:, 3], c=y_pred, cmap='coolwarm', s=50, alpha=0.7)
+plt.xlabel(X.columns[0])  # Use the first feature name as x-axis label
+plt.ylabel(X.columns[3])  # Use the second feature name as y-axis label
+plt.title('Scatter Plot with Anomaly Labels')
+plt.colorbar()
+plt.show()
 
 # You can now use y_pred_proba or y_pred for further analysis or evaluation
 
@@ -182,16 +256,16 @@ plt.legend()
 top_5_columns = xgb_model.feature_importances_.argsort()[-3:][::-1]
 
 # Plot the distributions of the top 5 most anomalous columns
-for col_index in top_5_columns:
-    column_name = numerical_columns[col_index]
-    plt.figure(figsize=(10, 6))
-    plt.hist(data[column_name+'_z_score'], bins=50, label=f'Distribution of Z Score in {column_name}')
-    plt.title(f'Distribution of {column_name}')
-    plt.xlabel(column_name)
-    plt.ylabel('Frequency')
-    plt.legend()
-    plt.savefig(f'{column_name}_distribution.png')
-    #plt\.show\(\)
+# for col_index in top_5_columns:
+#     column_name = numerical_columns[col_index]
+#     plt.figure(figsize=(10, 6))
+#     plt.hist(data[column_name+'_z_score'], bins=50, label=f'Distribution of Z Score in {column_name}')
+#     plt.title(f'Distribution of {column_name}')
+#     plt.xlabel(column_name)
+#     plt.ylabel('Frequency')
+#     plt.legend()
+#     plt.savefig(f'{column_name}_distribution.png')
+#     #plt\.show\(\)
 # Save the updated dataset
 data.to_csv('updated_with_anomalies_xgboost_stammdaten.csv', index=False)
 
@@ -246,7 +320,7 @@ not_processed_data['if_anomaly'] = np.where(not_processed_data['if_anomaly'] == 
 anomaly_scores = if_model.decision_function(X_imputed)
 
 # Find the indices of the top 5 anomalies (lowest anomaly scores)
-top_5_anomalies_indices = np.argsort(anomaly_scores)[:50]
+top_5_anomalies_indices = np.argsort(anomaly_scores)[:150]
 
 # Get the corresponding rows (samples) from the original data
 top_5_anomalies_data = not_processed_data.iloc[top_5_anomalies_indices]
