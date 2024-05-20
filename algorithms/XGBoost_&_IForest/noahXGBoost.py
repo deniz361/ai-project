@@ -196,7 +196,7 @@ print(data['anomaly_label'])
 anomalies_xgboost = not_processed_data[data['anomaly_label'] == 1]
 
 # Save detected anomalies to a CSV file
-anomalies_xgboost.to_csv('detected_anomalies_xgboost.csv', index=False)
+anomalies_xgboost.to_csv('detected_anomalies_xgboost.csv', index=True)
 
 
 
@@ -267,7 +267,7 @@ top_5_columns = xgb_model.feature_importances_.argsort()[-3:][::-1]
 #     plt.savefig(f'{column_name}_distribution.png')
 #     #plt\.show\(\)
 # Save the updated dataset
-data.to_csv('updated_with_anomalies_xgboost_stammdaten.csv', index=False)
+#data.to_csv('updated_with_anomalies_xgboost_stammdaten.csv', index=False)
 
 
 
@@ -325,9 +325,9 @@ top_5_anomalies_indices = np.argsort(anomaly_scores)[:150]
 # Get the corresponding rows (samples) from the original data
 top_5_anomalies_data = not_processed_data.iloc[top_5_anomalies_indices]
 # Save the top anomalies to a CSV file
-top_5_anomalies_data.to_csv('top_5_anomalies.csv', index=False)
+top_5_anomalies_data.to_csv('top_150_Iforest_anomalies.csv', index=True)
 
-not_processed_data['if_anomaly'].to_csv('allanomaliIforest.csv', index=False)
+#not_processed_data['if_anomaly'].to_csv('allanomaliIforest.csv', index=False)
 # Find the top 5 columns with the most anomalies predicted by Isolation Forest
 top_5_columns = np.argsort(np.sum(np.abs(if_model.decision_function(X_imputed))))
 
@@ -402,7 +402,7 @@ for col_index in top_5_columns[:5]:
     plt.show()
 
 # Save the updated dataset
-data.to_csv('updated_with_anomalies_iforest_stammdaten.csv', index=False)
+#data.to_csv('updated_with_anomalies_iforest_stammdaten.csv', index=True)
 
 
 

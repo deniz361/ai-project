@@ -8,9 +8,11 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 class Data_Preprocessing():
     def __init__(self, file_path) -> None:
-        self.data = pd.read_csv(file_path, low_memory=False, nrows=7000)
+        self.data = pd.read_csv(file_path, low_memory=False, nrows=1000)
         
         self.rename_to_english()
+
+        self.data.reset_index()
         
         print(self.data.columns)
         
