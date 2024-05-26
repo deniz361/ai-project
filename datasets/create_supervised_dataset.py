@@ -1,8 +1,17 @@
 import pandas as pd
 
-# Basically what I am doing here is comparing Stammdaten and rule based anomalies to match the anomalies in Stammdaten.
-# This way, we will be able to ceate a supervised dataset for anomalies.
-# However, so far, there are no matching colums, whcih might be caused by either lack of matching data or wrong code logic 
+def rename(data):
+    data.rename(columns={"Materialnummer": "Material number", "Lieferant OB": "Supplier", "Vertrag OB": "Contract", 
+                         "Vertragsposition OB": "Contract Position", "Planlieferzeit Vertrag": "Fulfillment time", 
+                         "Vertrag Fix1": "Fixed contract 1", "Vertrag_Fix2": "Fixed contract 2", "Beschaffungsart": 
+                         "Procurement type", "Sonderbeschaffungsart": "Special procurement type", "Disponent":
+                         "Dispatcher", "Einkäufer": "Buyer", "DispoGruppe": "Purchasing group", "Dispolosgröße": 
+                         "Purchasing lot size", "Gesamtbestand": "Total quantity", "Gesamtwert": "Total value",
+                         "Preiseinheit": "Price unit", "Kalender": "Calendar", "Werk OB": "Plant", "Werk Infosatz":
+                         "Plant information record", "Infosatznummer": "Information record number", "Infosatztyp":
+                         "Information record type", "WE-Bearbeitungszeit": "Plant processing time", "Planlieferzeit Mat-Stamm":
+                         "Material master time", "Warengruppe": "Product group", "Basiseinheit": "Base unit"}, inplace=True)
+    return data
 
 def compare_csv_columns(file1, file2):
     # Read the CSV files into DataFrames with low_memory=False to handle mixed types
@@ -10,6 +19,7 @@ def compare_csv_columns(file1, file2):
     df2 = pd.read_csv(file2, low_memory=False)
 
     # Get the columns from each DataFrame
+    df1 = rename(df1)
     columns_df1 = set(df1.columns)
     columns_df2 = set(df2.columns)
 
@@ -52,9 +62,37 @@ def compare_csv_columns(file1, file2):
         "exact_match_count": exact_match_count
     }
 
+def create_supervised_dataset(file1, file2):
+    # Read the CSV files into DataFrames with low_memory=False to handle mixed types
+    df1 = pd.read_csv(file1, low_memory=False)
+    df2 = pd.read_csv(file2, low_memory=False)
+
+    # Rename columns in df1
+    df1 = rename(df1)
+
+    # Find common columns
+    common_columns = set(df1.columns).intersection(set(df2.columns))
+
+    # Filter out 'anomaly' column from common columns
+    common_columns.discard('anomaly')
+
+    # Filter data from df2 with 'anomaly' column value '0'
+    df2_filtered = df2[df2['anomaly'] == 0][list(common_columns)]
+
+    # Add 'anomaly' column with value '1' to df1
+    df1['anomaly'] = 1
+
+    # Add 'anomaly' column with value '0' to df2_filtered
+    df2_filtered['anomaly'] = 0
+
+    # Concatenate the two DataFrames
+    supervised_dataset = pd.concat([df1[list(common_columns) + ['anomaly']], df2_filtered], ignore_index=True)
+
+    return supervised_dataset
+
 # Path to CSV files
-file1 = '/Users/awthura/THD/ai-project/datasets/rule_based_anomalies.csv'
-file2 = '/Users/awthura/THD/ai-project/datasets/Stammdaten.csv'
+file1 = '/Users/awthura/THD/ai-project/datasets/final_correct.csv'
+file2 = '/Users/awthura/THD/ai-project/datasets/processed_data_with_anomalies.csv'
 
 result = compare_csv_columns(file1, file2)
 
@@ -71,3 +109,11 @@ for col in result["unique_to_file2"]:
     print(col)
 
 print(f"\nNumber of rows with exact matches in common columns: {result['exact_match_count']}")
+
+# Create the supervised dataset
+supervised_dataset = create_supervised_dataset(file1, file2)
+
+# Save the supervised dataset to a new CSV file
+supervised_dataset.to_csv('/Users/awthura/THD/ai-project/datasets/supervised_dataset.csv', index=False)
+
+print("Supervised dataset created and saved to 'supervised_dataset.csv'.")
