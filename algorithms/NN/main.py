@@ -1,5 +1,3 @@
-# main.py
-
 import torch
 import torch.optim as optim
 from dataloader import load_data
@@ -41,7 +39,7 @@ def main():
     
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+    print(device)
     # Load data
     train_loader, test_loader = load_data(filepath)
     

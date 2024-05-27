@@ -13,55 +13,6 @@ def rename(data):
                          "Material master time", "Warengruppe": "Product group", "Basiseinheit": "Base unit"}, inplace=True)
     return data
 
-def compare_csv_columns(file1, file2):
-    # Read the CSV files into DataFrames with low_memory=False to handle mixed types
-    df1 = pd.read_csv(file1, low_memory=False)
-    df2 = pd.read_csv(file2, low_memory=False)
-
-    # Get the columns from each DataFrame
-    df1 = rename(df1)
-    columns_df1 = set(df1.columns)
-    columns_df2 = set(df2.columns)
-
-    # Find common columns
-    common_columns = list(columns_df1.intersection(columns_df2))
-
-    # Find columns unique to each DataFrame
-    unique_to_df1 = list(columns_df1 - columns_df2)
-    unique_to_df2 = list(columns_df2 - columns_df1)
-
-    # Ensure both DataFrames contain only the common columns
-    df1_common = df1[common_columns]
-    df2_common = df2[common_columns]
-
-    # Convert all columns to strings to handle any data type inconsistencies
-    df1_common = df1_common.astype(str)
-    df2_common = df2_common.astype(str)
-
-    # Align DataFrames to have the same number of rows by intersecting indexes
-    common_indexes = df1_common.index.intersection(df2_common.index)
-    df1_common = df1_common.loc[common_indexes]
-    df2_common = df2_common.loc[common_indexes]
-
-    # Ensure both DataFrames have identical column orders by sorting columns
-    df1_common = df1_common[sorted(df1_common.columns)]
-    df2_common = df2_common[sorted(df2_common.columns)]
-
-    # Ensure both DataFrames have identical index labels
-    df1_common = df1_common.reset_index(drop=True)
-    df2_common = df2_common.reset_index(drop=True)
-
-    # Count rows with exactly matching values in the common columns
-    exact_match_count = (df1_common.values == df2_common.values).all(axis=1).sum()
-
-    # Return the results
-    return {
-        "common_columns": common_columns,
-        "unique_to_file1": unique_to_df1,
-        "unique_to_file2": unique_to_df2,
-        "exact_match_count": exact_match_count
-    }
-
 def create_supervised_dataset(file1, file2):
     # Read the CSV files into DataFrames with low_memory=False to handle mixed types
     df1 = pd.read_csv(file1, low_memory=False)
@@ -69,46 +20,30 @@ def create_supervised_dataset(file1, file2):
 
     # Rename columns in df1
     df1 = rename(df1)
+    df2 = rename(df2)
 
-    # Find common columns
-    common_columns = set(df1.columns).intersection(set(df2.columns))
+    # Ensure 'Material number' column exists in both DataFrames
+    if 'Material number' not in df1.columns or 'Material number' not in df2.columns:
+        raise ValueError("Both datasets must contain the 'Material number' column.")
 
-    # Filter out 'anomaly' column from common columns
-    common_columns.discard('anomaly')
+    # Create a set of 'Material number' from df2
+    material_numbers_df2 = set(df2['Material number'])
 
-    # Filter data from df2 with 'anomaly' column value '0'
-    df2_filtered = df2[df2['anomaly'] == 0][list(common_columns)]
+    # Add 'anomaly' column to df1 and count matches
+    df1['anomaly'] = df1['Material number'].apply(lambda x: 1 if x in material_numbers_df2 else 0)
+    match_count = df1['anomaly'].sum()
 
-    # Add 'anomaly' column with value '1' to df1
-    df1['anomaly'] = 1
+    # The supervised dataset includes all columns from df1 plus the 'anomaly' column
+    supervised_dataset = df1.copy()
 
-    # Add 'anomaly' column with value '0' to df2_filtered
-    df2_filtered['anomaly'] = 0
-
-    # Concatenate the two DataFrames
-    supervised_dataset = pd.concat([df1[list(common_columns) + ['anomaly']], df2_filtered], ignore_index=True)
+    # Print the number of matches found
+    print(f"Number of matches found for 'Material number': {match_count}")
 
     return supervised_dataset
 
 # Path to CSV files
-file1 = '/Users/awthura/THD/ai-project/datasets/final_correct.csv'
-file2 = '/Users/awthura/THD/ai-project/datasets/processed_data_with_anomalies.csv'
-
-result = compare_csv_columns(file1, file2)
-
-print("Common columns:")
-for col in result["common_columns"]:
-    print(col)
-
-print("\nColumns unique to file1")
-for col in result["unique_to_file1"]:
-    print(col)
-
-print("\nColumns unique to file2")
-for col in result["unique_to_file2"]:
-    print(col)
-
-print(f"\nNumber of rows with exact matches in common columns: {result['exact_match_count']}")
+file1 = '/Users/awthura/THD/ai-project/datasets/Stammdaten.csv'
+file2 = '/Users/awthura/THD/ai-project/datasets/final_correct.csv'
 
 # Create the supervised dataset
 supervised_dataset = create_supervised_dataset(file1, file2)
