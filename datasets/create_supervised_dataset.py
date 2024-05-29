@@ -1,73 +1,63 @@
 import pandas as pd
 
-# Basically what I am doing here is comparing Stammdaten and rule based anomalies to match the anomalies in Stammdaten.
-# This way, we will be able to ceate a supervised dataset for anomalies.
-# However, so far, there are no matching colums, whcih might be caused by either lack of matching data or wrong code logic 
+def rename(data):
+    data.rename(columns={"Materialnummer": "Material number", "Lieferant OB": "Supplier", "Vertrag OB": "Contract", 
+                         "Vertragsposition OB": "Contract Position", "Planlieferzeit Vertrag": "Fulfillment time", 
+                         "Vertrag Fix1": "Fixed contract 1", "Vertrag_Fix2": "Fixed contract 2", "Beschaffungsart": 
+                         "Procurement type", "Sonderbeschaffungsart": "Special procurement type", "Disponent":
+                         "Dispatcher", "Einkäufer": "Buyer", "DispoGruppe": "Purchasing group", "Dispolosgröße": 
+                         "Purchasing lot size", "Gesamtbestand": "Total quantity", "Gesamtwert": "Total value",
+                         "Preiseinheit": "Price unit", "Kalender": "Calendar", "Werk OB": "Plant", "Werk Infosatz":
+                         "Plant information record", "Infosatznummer": "Information record number", "Infosatztyp":
+                         "Information record type", "WE-Bearbeitungszeit": "Plant processing time", "Planlieferzeit Mat-Stamm":
+                         "Material master time", "Warengruppe": "Product group", "Basiseinheit": "Base unit"}, inplace=True)
+    return data
 
-def compare_csv_columns(file1, file2):
+def create_supervised_dataset(file1, file2, file3):
     # Read the CSV files into DataFrames with low_memory=False to handle mixed types
     df1 = pd.read_csv(file1, low_memory=False)
     df2 = pd.read_csv(file2, low_memory=False)
+    df3 = pd.read_csv(file3, low_memory=False)
 
-    # Get the columns from each DataFrame
-    columns_df1 = set(df1.columns)
-    columns_df2 = set(df2.columns)
+    # Rename columns in df1, df2, and df3
+    df1 = rename(df1)
+    df2 = rename(df2)
+    df3 = rename(df3)
 
-    # Find common columns
-    common_columns = list(columns_df1.intersection(columns_df2))
+    # Ensure 'Material number' and 'plant id' columns exist in all DataFrames
+    required_columns = {'Material number', 'Plant'}
+    if not required_columns.issubset(df1.columns) or not required_columns.issubset(df2.columns) or not required_columns.issubset(df3.columns):
+        raise ValueError("All datasets must contain the 'Material number' and 'Plant' columns.")
 
-    # Find columns unique to each DataFrame
-    unique_to_df1 = list(columns_df1 - columns_df2)
-    unique_to_df2 = list(columns_df2 - columns_df1)
+    # Create sets of ('Material number', 'plant id') tuples from df2 and df3
+    material_plant_set_df2 = set(df2[['Material number', 'Plant']].apply(tuple, axis=1))
+    material_plant_set_df3 = set(df3[['Material number', 'Plant']].apply(tuple, axis=1))
 
-    # Ensure both DataFrames contain only the common columns
-    df1_common = df1[common_columns]
-    df2_common = df2[common_columns]
+    # Union of both sets
+    combined_material_plant_set = material_plant_set_df2.union(material_plant_set_df3)
 
-    # Convert all columns to strings to handle any data type inconsistencies
-    df1_common = df1_common.astype(str)
-    df2_common = df2_common.astype(str)
+    # Add 'anomaly' column to df1 and count matches
+    df1['anomaly'] = df1.apply(lambda row: 1 if (row['Material number'], row['Plant']) in combined_material_plant_set else 0, axis=1)
+    match_count = df1['anomaly'].sum()
 
-    # Align DataFrames to have the same number of rows by intersecting indexes
-    common_indexes = df1_common.index.intersection(df2_common.index)
-    df1_common = df1_common.loc[common_indexes]
-    df2_common = df2_common.loc[common_indexes]
+    # The supervised dataset includes all columns from df1 plus the 'anomaly' column
+    supervised_dataset = df1.copy()
 
-    # Ensure both DataFrames have identical column orders by sorting columns
-    df1_common = df1_common[sorted(df1_common.columns)]
-    df2_common = df2_common[sorted(df2_common.columns)]
+    # Print the number of matches found
+    print(f"Number of matches found for 'Material number' and 'Plant': {match_count}")
 
-    # Ensure both DataFrames have identical index labels
-    df1_common = df1_common.reset_index(drop=True)
-    df2_common = df2_common.reset_index(drop=True)
-
-    # Count rows with exactly matching values in the common columns
-    exact_match_count = (df1_common.values == df2_common.values).all(axis=1).sum()
-
-    # Return the results
-    return {
-        "common_columns": common_columns,
-        "unique_to_file1": unique_to_df1,
-        "unique_to_file2": unique_to_df2,
-        "exact_match_count": exact_match_count
-    }
+    return supervised_dataset
 
 # Path to CSV files
-file1 = '/Users/awthura/THD/ai-project/datasets/rule_based_anomalies.csv'
-file2 = '/Users/awthura/THD/ai-project/datasets/Stammdaten.csv'
+file1 = '/Users/awthura/THD/ai-project/datasets/Stammdaten.csv'
+file2 = '/Users/awthura/THD/ai-project/datasets/final_anomalies.csv'
+file3 = '/Users/awthura/THD/ai-project/datasets/rule_based_anomalies.csv'
 
-result = compare_csv_columns(file1, file2)
+# Create the supervised dataset
+supervised_dataset = create_supervised_dataset(file1, file2, file3)
 
-print("Common columns:")
-for col in result["common_columns"]:
-    print(col)
+# Save the supervised dataset to a new CSV file
+supervised_dataset.to_csv('/Users/awthura/THD/ai-project/datasets/supervised_dataset.csv', index=False)
 
-print("\nColumns unique to file1")
-for col in result["unique_to_file1"]:
-    print(col)
-
-print("\nColumns unique to file2")
-for col in result["unique_to_file2"]:
-    print(col)
-
-print(f"\nNumber of rows with exact matches in common columns: {result['exact_match_count']}")
+print("Supervised dataset created and saved to 'supervised_dataset.csv'.")
+print(len(supervised_dataset))
