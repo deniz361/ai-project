@@ -8,13 +8,13 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 class Data_Preprocessing():
     def __init__(self, file_path) -> None:
-        self.data = pd.read_csv(file_path, low_memory=False, nrows=10000)
+        self.data = pd.read_csv(file_path, low_memory=False, nrows=1000)
         
         self.rename_to_english()
-
-        self.data.reset_index()
         
         print(self.data.columns)
+
+        self.data.reset_index()
         
         # Specify categorical and numerical numbers manually
         self.categorical_columns = ["Material number", "Supplier", "Contract", "Contract Position", "Procurement type", 
@@ -98,16 +98,10 @@ class Data_Preprocessing():
         #data = data[numerical_columns]
 
         self.data=self.preprocess_data()
-        from sklearn.impute import KNNImputer
 
-        # Instantiate KNN imputer
-        imputer = KNNImputer()
-
-        # Impute missing values using KNN imputation
-        data_numeric_imputed = imputer.fit_transform(self.data[self.numerical_columns])
-        data_numeric_imputed= pd.DataFrame(data_numeric_imputed,columns=self.numerical_columns)
         not_scaled_data = self.data.copy()
-
+        self.categorical_columns.remove("Material number")
+        self.categorical_columns.remove("Information record number")
         # categorical_cols = ["Materialnummer", "Lieferant OB", "Vertragsposition OB", "Beschaffungsart", "Disponent", "Einkäufer", "Dispolosgröße", "Werk OB", "Warengruppe", "Basiseinheit"]
         # numeric_cols = ["Planlieferzeit Vertrag", "Vertrag Fix1", "Vertrag_Fix2", "Gesamtbestand", "Gesamtwert", "Preiseinheit", "WE-Bearbeitungszeit", "Planlieferzeit Mat-Stamm"]
         
@@ -125,12 +119,12 @@ class Data_Preprocessing():
             data_imputed_encoded = pd.DataFrame()
 
         # Combine numeric and encoded categorical columns
-        processed_data = pd.concat([data_numeric_imputed, data_imputed_encoded], axis=1)
+        processed_data = pd.concat([self.data[self.numerical_columns], self.data[self.categorical_columns]], axis=1)
 
 
         # Normalize features
         scaler = StandardScaler()
-        processed_data = pd.DataFrame(scaler.fit_transform(processed_data), columns=processed_data.columns)
+        #processed_data = pd.DataFrame(scaler.fit_transform(processed_data), columns=processed_data.columns)
 
 
-        return processed_data, not_scaled_data
+        return processed_data, not_scaled_data, data_imputed_encoded
