@@ -27,7 +27,7 @@ numerical_columns = ["Fulfillment time", "Fixed contract 1", "Fixed contract 2",
 file_path = 'datasets/sampled_data.csv'
 
 Data=Data_Preprocessing(file_path=file_path)
-data, not_processed_data= Data.preprocess_data_kmean()
+data, not_processed_data, categorical_columns_encoded= Data.preprocess_data_kmean()
 print(data)
 
 
@@ -102,14 +102,26 @@ y = data['anomaly_label']
 #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Train XGBoost model
-xgb_model = xgb.XGBClassifier(objective='binary:logistic', random_state=42)
+xgb_model = xgb.XGBClassifier(objective='binary:logistic',enable_categorical=True, random_state=42)
 xgb_model.fit(X, y)
 
 # Predict anomalies on the testing data
 y_pred_proba = xgb_model.predict_proba(X)[:, 1]  # Probability of being an outlier
 y_pred = xgb_model.predict(X)  # Binary prediction (0 or 1)
+data["xgbPossibility"]=y_pred_proba
+# You can now use y_pred_proba or y_pred for further analysis or evaluation
 
 # You can now use y_pred_proba or y_pred for further analysis or evaluation
+
+data_without_nan = data.dropna(subset=['Total quantity_z_score'])
+
+print(data['xgbPossibility'])
+# Filter data for anomalies
+# Filter not_processed_data for anomalies predicted by XGBoost
+anomalies_xgboost = not_processed_data[data['xgbPossibility'] > 0.003]
+
+# Save detected anomalies to a CSV file
+anomalies_xgboost.to_csv('detected_anomalies_xgboost.csv', index=True)
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, precision_recall_curve, confusion_matrix, roc_auc_score, average_precision_score
@@ -123,7 +135,7 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC Curve')
 plt.legend(loc="lower right")
-plt.show()
+#plt.show()
 
 # Precision-Recall Curve
 precision, recall, _ = precision_recall_curve(y, y_pred_proba)
@@ -133,7 +145,7 @@ plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Precision-Recall Curve')
 plt.legend(loc="lower left")
-plt.show()
+#plt.show()
 
 # Confusion Matrix
 cm = confusion_matrix(y, y_pred)
@@ -145,7 +157,7 @@ plt.xticks([0, 1], ['Normal', 'Anomaly'])
 plt.yticks([0, 1], ['Normal', 'Anomaly'])
 plt.xlabel('Predicted label')
 plt.ylabel('True label')
-plt.show()
+#plt.show()
 
 
 # Feature Importance Plot (for top 5 features)
@@ -159,7 +171,7 @@ plt.yticks(range(len(top_features_indices)), top_feature_names)
 plt.xlabel('Feature Importance')
 plt.ylabel('Feature')
 plt.title(f'Top {top_n} Feature Importance Plot')
-plt.show()
+#plt.show()
 
 # Anomaly Score Distribution
 plt.figure(figsize=(8, 6))
@@ -167,7 +179,7 @@ plt.hist(y_pred_proba, bins=50, color='blue', alpha=0.7)
 plt.xlabel('Anomaly Score')
 plt.ylabel('Frequency')
 plt.title('Anomaly Score Distribution')
-plt.show()
+#plt.show()
 
 plt.figure(figsize=(12, 8))
 plt.scatter(X.iloc[:, 3], X.iloc[:, 4], c=y_pred, cmap='coolwarm', s=50, alpha=0.7)
@@ -175,7 +187,7 @@ plt.xlabel(X.columns[4])  # Use the first feature name as x-axis label
 plt.ylabel(X.columns[3])  # Use the second feature name as y-axis label
 plt.title('Scatter Plot with Anomaly Labels')
 plt.colorbar()
-plt.show()
+#plt.show()
 
 # Scatter Plot with Anomaly Labels
 plt.figure(figsize=(12, 8))
@@ -184,19 +196,7 @@ plt.xlabel(X.columns[0])  # Use the first feature name as x-axis label
 plt.ylabel(X.columns[3])  # Use the second feature name as y-axis label
 plt.title('Scatter Plot with Anomaly Labels')
 plt.colorbar()
-plt.show()
-
-# You can now use y_pred_proba or y_pred for further analysis or evaluation
-
-data_without_nan = data.dropna(subset=['Total quantity_z_score'])
-
-print(data['anomaly_label'])
-# Filter data for anomalies
-# Filter not_processed_data for anomalies predicted by XGBoost
-anomalies_xgboost = not_processed_data[data['anomaly_label'] == 1]
-
-# Save detected anomalies to a CSV file
-anomalies_xgboost.to_csv('detected_anomalies_xgboost.csv', index=True)
+#plt.show()
 
 
 
@@ -291,6 +291,9 @@ import matplotlib.pyplot as plt
 # # Combine all outlier flags to a single anomaly label
 # data['anomaly_label'] = data[[col + '_outlier' for col in numerical_columns]].max(axis=1)
 X = data.drop(columns=['anomaly_label'])
+
+
+X = pd.DataFrame(np.hstack((X[numerical_columns].values, categorical_columns_encoded)))
 # Train Isolation Forest model for anomaly detection
 from sklearn.impute import KNNImputer
 
@@ -320,7 +323,7 @@ not_processed_data['if_anomaly'] = np.where(not_processed_data['if_anomaly'] == 
 anomaly_scores = if_model.decision_function(X_imputed)
 
 # Find the indices of the top 5 anomalies (lowest anomaly scores)
-top_5_anomalies_indices = np.argsort(anomaly_scores)[:150]
+top_5_anomalies_indices = np.argsort(anomaly_scores)[:200]
 
 # Get the corresponding rows (samples) from the original data
 top_5_anomalies_data = not_processed_data.iloc[top_5_anomalies_indices]
@@ -352,7 +355,7 @@ plt.title('Histogram of Anomaly Scores')
 plt.xlabel('Anomaly Score')
 plt.ylabel('Frequency')
 plt.grid(True)
-plt.show()
+#plt.show()
 
 # Create a scatter plot of anomalies
 plt.figure(figsize=(10, 6))
@@ -362,7 +365,7 @@ plt.xlabel('Sample Index')
 plt.ylabel('Anomaly Score')
 plt.colorbar(label='Anomaly')
 plt.grid(True)
-plt.show()
+#plt.show()
 
 # Plot Feature Importance
 # plt.figure(figsize=(10, 6))
@@ -380,14 +383,14 @@ plt.title('Box Plot of Anomaly Scores by Class')
 plt.xlabel('Anomaly')
 plt.ylabel('Anomaly Score')
 plt.grid(True)
-plt.show()
+#plt.show()
 
 # Correlation Heatmap
 correlation_matrix = X_imputed.corr()
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Heatmap')
-plt.show()
+#plt.show()
 
 # Plot the distributions of the top 5 most anomalous columns
 for col_index in top_5_columns[:5]:
@@ -399,7 +402,7 @@ for col_index in top_5_columns[:5]:
     plt.ylabel('Frequency')
     plt.legend()
     plt.savefig(f'{column_name}_distribution.png')
-    plt.show()
+    #plt.show()
 
 # Save the updated dataset
 #data.to_csv('updated_with_anomalies_iforest_stammdaten.csv', index=True)
@@ -419,7 +422,7 @@ for col_index in range(len(numerical_columns)):
     plt.title(f'Scatter Plot of {column_name}')
     plt.legend()
     plt.savefig(f'{column_name}_scatter.png')
-    plt.show()
+    #plt.show()
 
 
 # Calculate ratios of detected anomalies on each column
