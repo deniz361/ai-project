@@ -134,8 +134,8 @@ def detect_anomalies_LOF(data, n_neighbors=10, contamination=0.05):
     return anomalies, lof_scores
 
 # Load the original dataset
-file_path = 'datasets/Stammdaten.csv'
-original_data = pd.read_csv(file_path, low_memory=False)
+file_path = 'datasets/sampled_data.csv'
+original_data = pd.read_csv(file_path, low_memory=False, nrows=10000)
 
 # Sample and save the data
 sampled_data = sample_and_save_data(original_data)
@@ -149,7 +149,7 @@ anomalies, lof_scores = load_data_and_run_lof('sampled_data.csv')
 processed_data['anomaly'] = np.where(lof_scores < 0, 1, 0)
 print(processed_data.head())
 # Save the sampled data with the "anomaly" column as CSV
-processed_data.to_csv('processed_data_with_anomalies.csv', index=False)
+processed_data.to_csv('processed_data_with_anomalies.csv', index=True)
 
 
 # Print indices of the sampled data DataFrame
