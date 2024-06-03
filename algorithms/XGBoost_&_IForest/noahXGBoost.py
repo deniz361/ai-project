@@ -118,10 +118,11 @@ data_without_nan = data.dropna(subset=['Total quantity_z_score'])
 print(data['xgbPossibility'])
 # Filter data for anomalies
 # Filter not_processed_data for anomalies predicted by XGBoost
-anomalies_xgboost = not_processed_data[data['xgbPossibility'] > 0.003]
+anomalies_xgboost = not_processed_data[data['xgbPossibility'] > 0.995]
 
 # Save detected anomalies to a CSV file
 anomalies_xgboost.to_csv('detected_anomalies_xgboost.csv', index=True)
+print("saved xgb anomalies")
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, precision_recall_curve, confusion_matrix, roc_auc_score, average_precision_score
