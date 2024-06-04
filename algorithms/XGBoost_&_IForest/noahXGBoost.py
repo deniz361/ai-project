@@ -4,6 +4,8 @@ import pandas as pd
 import os
 import sys
 
+from sklearn.inspection import permutation_importance
+
 # Get the current directory of the script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
@@ -120,6 +122,16 @@ print(data['xgbPossibility'])
 # Filter not_processed_data for anomalies predicted by XGBoost
 anomalies_xgboost = not_processed_data[data['xgbPossibility'] > 0.995]
 
+
+feature_importances = xgb_model.feature_importances_
+
+# Create a DataFrame to display feature importances
+feature_importances_df = pd.DataFrame({
+    'feature': X.columns,
+    'importance': feature_importances
+})
+feature_importances_df.to_csv('feature_importances_xgb.csv')
+
 # Save detected anomalies to a CSV file
 anomalies_xgboost.to_csv('detected_anomalies_xgboost.csv', index=True)
 print("saved xgb anomalies")
@@ -162,7 +174,7 @@ plt.ylabel('True label')
 
 
 # Feature Importance Plot (for top 5 features)
-top_n = 5  # Specify the number of top features to plot
+top_n = 8  # Specify the number of top features to plot
 top_features_indices = xgb_model.feature_importances_.argsort()[-top_n:][::-1]
 top_feature_names = X.columns[top_features_indices]
 
@@ -291,23 +303,15 @@ import matplotlib.pyplot as plt
 
 # # Combine all outlier flags to a single anomaly label
 # data['anomaly_label'] = data[[col + '_outlier' for col in numerical_columns]].max(axis=1)
-X = data.drop(columns=['anomaly_label'])
+X = data[numerical_columns]
 
+#X = data.drop(columns=['anomaly_label'])
 
-X = pd.DataFrame(np.hstack((X[numerical_columns].values, categorical_columns_encoded)))
-# Train Isolation Forest model for anomaly detection
-from sklearn.impute import KNNImputer
+Data2=Data_Preprocessing(file_path=file_path)
+X_imputed= Data2.preprocess_data_kmean2()
 
-# Instantiate KNN imputer
-imputer = KNNImputer()
-
-# Impute missing values using KNN imputation
-X_imputed = imputer.fit_transform(X)
 y = data['anomaly_label']
 
-
-# Convert X_imputed into a DataFrame
-X_imputed = pd.DataFrame(X_imputed, columns=X.columns)
 
 
 
@@ -348,6 +352,50 @@ import seaborn as sns
 
 # Get anomaly scores for each sample
 anomaly_scores = if_model.decision_function(X_imputed)
+
+# Custom estimator wrapper for IsolationForest
+class IsolationForestWrapper(IsolationForest):
+    def score(self, X, y=None):
+        return np.mean(self.decision_function(X))
+
+# Use the custom estimator wrapper
+if_model_wrapped = IsolationForestWrapper(random_state=42)
+if_model_wrapped.fit(X_imputed)
+
+# Custom scoring function for anomaly detection
+def custom_score(estimator, X, y):
+    scores = estimator.decision_function(X)
+    return np.mean(scores)
+
+perm_importance = permutation_importance(if_model_wrapped, X_imputed, y,scoring=custom_score, n_repeats=10, random_state=42)
+# Perform permutation importance using the custom scoring function
+
+# Create a DataFrame to display permutation importances
+perm_importances_df = pd.DataFrame({
+    'feature': X_imputed.columns,
+    'importance': perm_importance.importances_mean,
+    'std': perm_importance.importances_std
+})
+perm_importances_df.to_csv('feature_importances_If.csv')
+
+import matplotlib.pyplot as plt
+
+# Sort features by their mean importance score
+sorted_indices = perm_importance.importances_mean.argsort()[::-1]
+
+# Get sorted feature names and importances
+sorted_feature_names = perm_importances_df['feature'].iloc[sorted_indices]
+sorted_importances = perm_importances_df['importance'].iloc[sorted_indices]
+
+# Plot the top N most important features
+top_n = 8  # Adjust the number of top features you want to plot
+plt.figure(figsize=(10, 6))
+plt.barh(range(top_n), sorted_importances[:top_n], align='center')
+plt.yticks(range(top_n), sorted_feature_names[:top_n])
+plt.xlabel('Permutation Importance')
+plt.title('Top {} Most Important Features (Isolation Forest)'.format(top_n))
+plt.gca().invert_yaxis()  # Invert y-axis to have the most important feature on top
+plt.show()
 
 # Plot Histogram of Anomaly Scores
 plt.figure(figsize=(10, 6))

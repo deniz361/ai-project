@@ -50,8 +50,8 @@ def test(model, val_loader, criterion, device):
 
 def main():
     # Parameters
-    train_filepath = '/Users/awthura/THD/ai-project/datasets/split/supervised_learning_dataset/train.csv'
-    val_filepath = '/Users/awthura/THD/ai-project/datasets/split/supervised_learning_dataset/val.csv'
+    train_filepath = 'datasets/split/supervised_learning_dataset/train.csv'
+    val_filepath = 'datasets/split/supervised_learning_dataset/val.csv'
     input_size = 23  # Change this based on your dataset features
     learning_rate = 0.001
     epochs = 10
