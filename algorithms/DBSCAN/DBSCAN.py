@@ -96,7 +96,7 @@ def preprocess_data(data):
     return processed_data           
             
 file_path = 'datasets/sampled_data.csv'
-df = pd.read_csv(file_path, low_memory=False, nrows=1000)
+df = pd.read_csv(file_path, low_memory=False, nrows=10000)
 processed_df = preprocess_data(df)
 # print_unique_values_by_dtype(df) 
 anomalies, labels, labeled_df = detect_anomalies_DBSCAN(processed_df)
