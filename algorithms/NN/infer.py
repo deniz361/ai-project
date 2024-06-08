@@ -49,4 +49,4 @@ def main(filepath: str, model_path: str):
     print("Anomalies saved to anomalies.csv")
 
 if __name__ == '__main__':
-    main("datasets/split/supervised_learning_dataset/test.csv", "algorithms/NN/weights/model_weights.pth")
+    main("datasets/supervised_dataset.csv", "algorithms/NN/weights/model_weights.pth")
