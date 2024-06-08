@@ -77,7 +77,7 @@ def main():
     test(model, val_loader, criterion, device)
     
     # Save model weights
-    torch.save(model.state_dict(), 'model_weights.pth')
+    torch.save(model.state_dict(), 'algorithms/NN/weights/model_weights.pth')
 
 if __name__ == '__main__':
     main()
