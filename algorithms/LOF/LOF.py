@@ -135,7 +135,7 @@ def detect_anomalies_LOF(data, n_neighbors=10, contamination=0.05):
 
 # Load the original dataset
 file_path = 'datasets/sampled_data.csv'
-original_data = pd.read_csv(file_path, low_memory=False, nrows=10000)
+original_data = pd.read_csv(file_path, low_memory=False, nrows=100000)
 
 # Sample and save the data
 sampled_data = sample_and_save_data(original_data)

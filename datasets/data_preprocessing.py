@@ -5,6 +5,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 
+from sklearn.impute import KNNImputer
+from sklearn.preprocessing import LabelEncoder
 
 class Data_Preprocessing():
     def __init__(self, file_path) -> None:
@@ -128,3 +130,26 @@ class Data_Preprocessing():
 
 
         return processed_data, not_scaled_data, data_imputed_encoded
+
+
+    def preprocess_data_kmean2(self):
+        # Drop columns with NaN values
+        processed_data = self.data[self.numerical_columns]
+
+        # Impute missing values using KNN imputation
+        imputer = KNNImputer()
+        processed_data = imputer.fit_transform(processed_data)
+        processed_data = pd.DataFrame(processed_data, columns=self.numerical_columns)
+
+        # Concatenate categorical columns
+        processed_data = pd.concat([processed_data, self.data[self.categorical_columns]], axis=1)
+
+        # Encode categorical columns with LabelEncoder
+        label_encoders = {}
+        for col in self.categorical_columns:
+            label_encoders[col] = LabelEncoder()
+            processed_data[col] = label_encoders[col].fit_transform(processed_data[col])
+
+        return processed_data
+
+
