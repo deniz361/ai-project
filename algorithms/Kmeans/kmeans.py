@@ -40,11 +40,13 @@ def preprocess_data(data):
 
     return processed_data  
 
-file_path = 'datasets/Stammdaten.csv'
-df = pd.read_csv(file_path, low_memory=False)
+file_path = 'datasets/sampled_data.csv'
+df = pd.read_csv(file_path, low_memory=False, nrows=10000)
 
 Data=Data_Preprocessing(file_path=file_path)
-processed_data= preprocess_data(df)
+processed_data= Data.preprocess_data_kmean2()
+
+
 print(processed_data)
 
 
@@ -70,9 +72,9 @@ def detect_anomalies(data, num_clusters, threshold):
 # dropna does not work no data
 # processed_data=processed_data.dropna()
 
-anomalies = detect_anomalies(processed_data, num_clusters=5, threshold=99)
+anomalies = detect_anomalies(processed_data, num_clusters=5, threshold=98)
 #unprocessed_anomalies = not_scaled_data.loc[anomalies.index]
 print(anomalies)
 
-anomalies.to_csv('algorithms/Kmeans/anomalies.csv', index=False)
+anomalies.to_csv('algorithms/Kmeans/anomalies_kmean.csv', index=True)
 

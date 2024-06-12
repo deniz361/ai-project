@@ -5,14 +5,18 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 
+from sklearn.impute import KNNImputer
+from sklearn.preprocessing import LabelEncoder
 
 class Data_Preprocessing():
     def __init__(self, file_path) -> None:
-        self.data = pd.read_csv(file_path, low_memory=False, nrows=3000)
+        self.data = pd.read_csv(file_path, low_memory=False, nrows=1000)
         
         self.rename_to_english()
         
         print(self.data.columns)
+
+        self.data.reset_index()
         
         # Specify categorical and numerical numbers manually
         self.categorical_columns = ["Material number", "Supplier", "Contract", "Contract Position", "Procurement type", 
@@ -98,7 +102,8 @@ class Data_Preprocessing():
         self.data=self.preprocess_data()
 
         not_scaled_data = self.data.copy()
-
+        self.categorical_columns.remove("Material number")
+        self.categorical_columns.remove("Information record number")
         # categorical_cols = ["Materialnummer", "Lieferant OB", "Vertragsposition OB", "Beschaffungsart", "Disponent", "Einkäufer", "Dispolosgröße", "Werk OB", "Warengruppe", "Basiseinheit"]
         # numeric_cols = ["Planlieferzeit Vertrag", "Vertrag Fix1", "Vertrag_Fix2", "Gesamtbestand", "Gesamtwert", "Preiseinheit", "WE-Bearbeitungszeit", "Planlieferzeit Mat-Stamm"]
         
@@ -116,12 +121,35 @@ class Data_Preprocessing():
             data_imputed_encoded = pd.DataFrame()
 
         # Combine numeric and encoded categorical columns
-        processed_data = pd.concat([self.data[self.numerical_columns], data_imputed_encoded], axis=1)
+        processed_data = pd.concat([self.data[self.numerical_columns], self.data[self.categorical_columns]], axis=1)
 
 
         # Normalize features
         scaler = StandardScaler()
-        processed_data = pd.DataFrame(scaler.fit_transform(processed_data), columns=processed_data.columns)
+        #processed_data = pd.DataFrame(scaler.fit_transform(processed_data), columns=processed_data.columns)
 
 
-        return processed_data, not_scaled_data
+        return processed_data, not_scaled_data, data_imputed_encoded
+
+
+    def preprocess_data_kmean2(self):
+        # Drop columns with NaN values
+        processed_data = self.data[self.numerical_columns]
+
+        # Impute missing values using KNN imputation
+        imputer = KNNImputer()
+        processed_data = imputer.fit_transform(processed_data)
+        processed_data = pd.DataFrame(processed_data, columns=self.numerical_columns)
+
+        # Concatenate categorical columns
+        processed_data = pd.concat([processed_data, self.data[self.categorical_columns]], axis=1)
+
+        # Encode categorical columns with LabelEncoder
+        label_encoders = {}
+        for col in self.categorical_columns:
+            label_encoders[col] = LabelEncoder()
+            processed_data[col] = label_encoders[col].fit_transform(processed_data[col])
+
+        return processed_data
+
+

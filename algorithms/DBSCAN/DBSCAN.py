@@ -95,8 +95,8 @@ def preprocess_data(data):
 
     return processed_data           
             
-file_path = 'datasets/Stammdaten.csv'
-df = pd.read_csv(file_path, low_memory=False)
+file_path = 'datasets/sampled_data.csv'
+df = pd.read_csv(file_path, low_memory=False, nrows=10000)
 processed_df = preprocess_data(df)
 # print_unique_values_by_dtype(df) 
 anomalies, labels, labeled_df = detect_anomalies_DBSCAN(processed_df)
@@ -105,4 +105,4 @@ dbscan_visualizer = DBSCANAnalyzer(processed_df, labels)
 dbscan_visualizer.silhouette_score()
 
 # Save the labeled DataFrame as a CSV file
-labeled_df.to_csv('labeled_data.csv', index=False)
+labeled_df.to_csv('labeled_data.csv', index=True)
