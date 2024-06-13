@@ -231,7 +231,7 @@ def print_anomaly_summary(df):
 
 
 
-file_path = 'sampled_data_with_anomalies.csv'
+file_path = '../../sampled_data_with_anomaly_scores.csv'
 df = pd.read_csv(file_path, low_memory=False)
 print_anomaly_summary(df)
 visualize_correlated_scatterplots(df)

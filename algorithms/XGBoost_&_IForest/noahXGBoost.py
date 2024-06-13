@@ -26,7 +26,7 @@ numerical_columns = ["Fulfillment time", "Fixed contract 1", "Fixed contract 2",
         
 
 
-file_path = 'datasets/sampled_data.csv'
+file_path = '../../datasets/sampled_data.csv'
 
 Data=Data_Preprocessing(file_path=file_path)
 data, not_processed_data, categorical_columns_encoded= Data.preprocess_data_kmean()
