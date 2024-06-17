@@ -1,26 +1,26 @@
 ,feature,importance
-0,Fulfillment time,0.0
-1,Fixed contract 1,0.0
-2,Fixed contract 2,0.0
-3,Total quantity,0.1050316
-4,Total value,0.02319733
-5,Price unit,0.26804143
-6,Plant processing time,0.5011241
-7,Material master time,0.0066785607
-8,Supplier,0.009932825
-9,Contract,0.0
-10,Contract Position,0.0
-11,Procurement type,0.0
-12,Special procurement type,0.0
-13,Dispatcher,0.0071344115
-14,Buyer,0.0054232716
-15,Purchasing group,0.002168034
-16,Purchasing lot size,0.036528673
-17,Calendar,0.024496056
-18,Plant,0.004290955
-19,Plant information record,0.0
-20,Information record type,0.0
-21,Product group,0.0059527624
+0,Supplier,3.490857e-05
+1,Contract,0.0015503702
+2,Contract Position,0.14411138
+3,Fulfillment time,0.060015928
+4,Fixed contract 1,0.24393354
+5,Fixed contract 2,0.0037285297
+6,Procurement type,0.0
+7,Special procurement type,0.0
+8,Dispatcher,3.6153775e-05
+9,Buyer,8.799988e-06
+10,Purchasing group,3.8666123e-05
+11,Purchasing lot size,1.6033518e-05
+12,Total quantity,0.00057106983
+13,Total value,0.00011852104
+14,Price unit,0.23756416
+15,Calendar,1.2047633e-05
+16,Plant information record,0.0
+17,Information record number,0.000107198895
+18,Information record type,0.0
+19,Plant processing time,0.22860743
+20,Material master time,8.040736e-05
+21,Product group,1.774774e-05
 22,Base unit,0.0
 23,Fulfillment time_z_score,0.0
 24,Fixed contract 1_z_score,0.0
@@ -28,13 +28,13 @@
 26,Total quantity_z_score,0.0
 27,Total value_z_score,0.0
 28,Price unit_z_score,0.0
-29,Material master time_z_score,0.0
-30,Plant processing time_z_score,0.0
+29,Plant processing time_z_score,0.0
+30,Material master time_z_score,0.0
 31,Fulfillment time_outlier,0.0
 32,Fixed contract 1_outlier,0.0
 33,Fixed contract 2_outlier,0.0
-34,Total quantity_outlier,0.0
-35,Total value_outlier,0.0
+34,Total quantity_outlier,0.00651913
+35,Total value_outlier,0.072927915
 36,Price unit_outlier,0.0
 37,Material master time_outlier,0.0
 38,Plant processing time_outlier,0.0

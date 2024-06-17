@@ -79,10 +79,10 @@ def load_data(train_filepath, val_filepath):
     if 'anomaly' not in train_df.columns or 'anomaly' not in val_df.columns:
         raise ValueError("The column 'anomaly' does not exist in the dataset.")
 
-    X_train = train_df.drop(columns=['anomaly']).values
-    Y_train = train_df['anomaly'].values
-    X_val = val_df.drop(columns=['anomaly']).values
-    Y_val = val_df['anomaly'].values
+    X_train = train_df.drop(columns=['anomaly'])
+    Y_train = train_df['anomaly']
+    X_val = val_df.drop(columns=['anomaly'])
+    Y_val = val_df['anomaly']
 
     return X_train, Y_train, X_val, Y_val
 
