@@ -39,14 +39,14 @@ def main(filepath: str, model_path: str):
 
     # Save predictions to a CSV file
     original_data['Prediction'] = predictions
-    original_data.to_csv('algorithms/NN/results/predictions.csv', index=False)
+    original_data.to_csv('algorithms/NN/results/test_predictions.csv', index=False)
 
     # Save anomalies to a CSV file
     anomalies = original_data[original_data['Prediction'] == 1]
-    anomalies.to_csv('algorithms/NN/results/anomalies.csv', index=False)
+    anomalies.to_csv('algorithms/NN/results/test_anomalies.csv', index=False)
 
     print("Predictions saved to predictions.csv")
     print("Anomalies saved to anomalies.csv")
 
 if __name__ == '__main__':
-    main("datasets/supervised_dataset.csv", "algorithms/NN/weights/model_weights.pth")
+    main("datasets/split/supervised_learning_dataset/test.csv", "algorithms/NN/weights/model_weights.pth")
