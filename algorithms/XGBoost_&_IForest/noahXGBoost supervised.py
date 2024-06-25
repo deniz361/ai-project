@@ -309,7 +309,7 @@ print("\nValidation Classification Report:\n", classification_report(Y_val, Y_pr
 print("\nValidation Confusion Matrix:\n", confusion_matrix(Y_val, Y_pred_val))
 
 
-not_processed_data=pd.DataFrame(not_processed_data)
+not_processed_data=pd.DataFrame(X_train)
 # Predict anomaly labels using Isolation Forest
 data2 = data.copy()
 not_processed_data['if_anomaly'] = if_model.predict(X_train)
@@ -329,8 +329,8 @@ top_5_anomalies_data.to_csv('top_150_Iforest_anomalies.csv', index=True)
 # Find the top 5 columns with the most anomalies predicted by Isolation Forest
 top_5_columns = np.argsort(np.sum(np.abs(if_model.decision_function(X_train))))
 
-not_processed_data['if_anomaly'].iloc[top_5_anomalies_indices] = 1  # Convert anomalies to 1
-not_processed_data['if_anomaly'].fillna(0, inplace=True)  # Fill non-anomalies with 0
+#Y_pred_val.iloc[top_5_anomalies_indices] = 1  # Convert anomalies to 1
+#not_processed_data['if_anomaly'].fillna(0, inplace=True)  # Fill non-anomalies with 0
 
 import pandas as pd
 import numpy as np
@@ -357,7 +357,7 @@ def custom_score(estimator, X, y):
     scores = estimator.decision_function(X)
     return np.mean(scores)
 
-perm_importance = permutation_importance(if_model_wrapped, X_train, y,scoring=custom_score, n_repeats=10, random_state=42)
+perm_importance = permutation_importance(if_model_wrapped, X_train, Y_train,scoring=custom_score, n_repeats=10, random_state=42)
 # Perform permutation importance using the custom scoring function
 
 # Create a DataFrame to display permutation importances
@@ -429,7 +429,7 @@ correlation_matrix = X_train.corr()
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Heatmap')
-#plt.show()
+plt.show()
 
 # Plot the distributions of the top 5 most anomalous columns
 for col_index in top_5_columns[:5]:
@@ -441,7 +441,7 @@ for col_index in top_5_columns[:5]:
     plt.ylabel('Frequency')
     plt.legend()
     plt.savefig(f'{column_name}_distribution.png')
-    #plt.show()
+    plt.show()
 
 # Save the updated dataset
 #data.to_csv('updated_with_anomalies_iforest_stammdaten.csv', index=True)
@@ -467,124 +467,6 @@ for col_index in range(len(numerical_columns)):
 # Calculate ratios of detected anomalies on each column
 anomaly_ratios = (data.filter(regex='_outlier$').sum() / len(data)).sort_values(ascending=False)
 print(anomaly_ratios)
-
-# Identify the most bizarre values of each column
-# most_bizarre_values = {}
-# for col in numerical_columns:
-#     # Calculate Z-score for each column
-#     z_scores = np.abs(stats.zscore(data[col]))
-#     # Identify the most bizarre value
-#     most_bizarre_value = data.loc[np.argmax(z_scores), col]
-#     most_bizarre_values[col] = most_bizarre_value
-
-# # Write the report to a text file
-# with open("anomaly_report_iforest.txt", "w") as f:
-#     f.write("Anomaly Ratios:\n")
-#     for col, ratio in anomaly_ratios.items():
-#         f.write(f"{col}: {ratio:.2f}\n")
-#     f.write("\nMost Bizarre Values:\n")
-#     for col, value in most_bizarre_values.items():
-#         f.write(f"{col}: {value}\n")
-#         f.write(f"Description: This value might occur due to ...\n\n")
-
-
-
-
-
-
-
-
-
-
-
-# import pandas as pd
-# import numpy as np
-# import xgboost as xgb
-# from scipy import stats
-# import matplotlib.pyplot as plt
-
-# # Handling missing values by replacing them with the median of each column
-# for col in numerical_columns:
-#     if data[col].isna().any():
-#         data[col].fillna(data[col].median(), inplace=True)
-
-# # Applying Z-score for anomaly detection in numeric columns
-# for col in numerical_columns:
-#     data[col + '_z_score'] = np.abs(stats.zscore(data[col]))
-#     data[col + '_outlier'] = 0
-#     data.loc[data[col + '_z_score'] > 3, col + '_outlier'] = 1  # Any Z-score > 3 is considered an outlier
-
-# # Combine all outlier flags to a single anomaly label
-# data['anomaly'] = data[[col + '_outlier' for col in numerical_columns]].max(axis=1)
-
-# # Train XGBoost model for anomaly detection
-# xgb_model = xgb.XGBClassifier(objective='binary:logistic', random_state=42)
-# xgb_model.fit(data[numerical_columns], data['anomaly'])
-
-# # Predict anomaly labels using XGBoost
-# data['xgb_anomaly'] = xgb_model.predict(data[numerical_columns])
-
-# # Find the top 5 columns with the most anomalies predicted by XGBoost
-# top_5_columns = xgb_model.feature_importances_.argsort()[-5:][::-1]
-
-# # Plot the distributions of the top 5 most anomalous columns
-# for col_index in top_5_columns:
-#     column_name = numerical_columns[col_index]
-#     plt.figure(figsize=(10, 6))
-#     plt.hist(data[column_name], bins=50, label=f'Distribution of {column_name}')
-#     plt.title(f'Distribution of {column_name}')
-#     plt.xlabel(column_name)
-#     plt.ylabel('Frequency')
-#     plt.legend()
-#     plt.savefig(f'{column_name}_distribution.png')
-#     plt.show()
-
-# # Save the updated dataset
-# data.to_csv('updated_with_anomalies_xgboost_stammdaten.csv', index=False)
-
-
-
-# # Scatter plots for detected anomalies
-# plt.figure(figsize=(15, 10))
-# for col_index in range(len(numerical_columns)):
-#     column_name = numerical_columns[col_index]
-#     # Plot anomalies detected by XGBoost
-#     plt.scatter(data[column_name][data['xgb_anomaly'] == 1], data[column_name][data['xgb_anomaly'] == 1], c='red', label='Anomaly')
-#     # Plot normal data points
-#     plt.scatter(data[column_name][data['xgb_anomaly'] == 0], data[column_name][data['xgb_anomaly'] == 0], c='blue', label='Normal')
-#     plt.xlabel(column_name)
-#     plt.ylabel('Value')
-#     plt.title(f'Scatter Plot of {column_name}')
-#     plt.legend()
-#     plt.savefig(f'{column_name}_scatter.png')
-#     plt.show()
-
-
-
-# # Calculate ratios of detected anomalies on each column
-# anomaly_ratios = (data.filter(regex='_outlier$').sum() / len(data)).sort_values(ascending=False)
-
-# # Identify the most bizarre values of each column
-# most_bizarre_values = {}
-# for col in numerical_columns:
-#     # Calculate Z-score for each column
-#     z_scores = np.abs(stats.zscore(data[col]))
-#     # Identify the most bizarre value
-#     most_bizarre_value = data.loc[np.argmax(z_scores), col]
-#     most_bizarre_values[col] = most_bizarre_value
-
-# # Write the report to a text file
-# with open("anomaly_report.txt", "w") as f:
-#     f.write("Anomaly Ratios:\n")
-#     for col, ratio in anomaly_ratios.items():
-#         f.write(f"{col}: {ratio:.2f}\n")
-#     f.write("\nMost Bizarre Values:\n")
-#     for col, value in most_bizarre_values.items():
-#         f.write(f"{col}: {value}\n")
-#         f.write(f"Description: This value might occur due to ...\n\n")
-
-
-
 
 
 
