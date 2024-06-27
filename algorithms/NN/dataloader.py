@@ -107,6 +107,9 @@ def load_data(train_filepath, val_filepath):
     X_val = val_df.drop(columns=['anomaly']).values
     Y_val = val_df['anomaly'].values
 
+    # Get feature names
+    feature_names = train_df.drop(columns=['anomaly']).columns.tolist()
+
     # Convert to PyTorch tensors
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
     Y_train_tensor = torch.tensor(Y_train, dtype=torch.float32)
@@ -120,4 +123,5 @@ def load_data(train_filepath, val_filepath):
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 
-    return train_loader, val_loader
+    return train_loader, val_loader, feature_names
+
