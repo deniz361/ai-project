@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import numpy as np
 import pickle
+import shap
 
 def handle_zeros(data):
     columns_with_zero_as_missing = [
@@ -100,6 +101,11 @@ def train_random_forest(X_train, Y_train, X_val, Y_val):
 
     with open('algorithms/RFC/saved_prep_obj/random_forest_model.pkl', 'wb') as file:
         pickle.dump(rf_classifier, file)
+
+    ## These three lines are for feature importance. They should be disabled for regular training
+    #explainer = shap.TreeExplainer(rf_classifier, X_train)
+    #shap_values = explainer.shap_values(X_val,check_additivity=False)
+    #shap.summary_plot(shap_values, X_val, feature_names=X_val.columns)
 
 if __name__ == "__main__":
     train_filepath = 'datasets/split/supervised_learning_dataset/train.csv'
