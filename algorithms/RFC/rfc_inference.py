@@ -4,6 +4,15 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 
 def handle_zeros(data):
+    """
+    Replace zero values with NaN in specified columns.
+
+    Args:
+        data (pd.DataFrame): DataFrame containing the data.
+
+    Returns:
+        pd.DataFrame: DataFrame with zeros replaced by NaN in specified columns.
+    """
     columns_with_zero_as_missing = [
         "Fulfillment time", "Material master time", "Plant processing time",
         "Total quantity", "Total value", "Fixed contract 1", "Fixed contract 2"
@@ -12,6 +21,15 @@ def handle_zeros(data):
     return data
 
 def load_inference_data(filepath: str) -> pd.DataFrame:
+    """
+    Load and preprocess the data for inference.
+
+    Args:
+        filepath (str): Path to the inference data CSV file.
+
+    Returns:
+        pd.DataFrame: Preprocessed DataFrame ready for inference.
+    """
     categorical_columns = ["Supplier", "Contract", "Contract Position", "Procurement type", "Dispatcher", "Buyer",
                            "Purchasing lot size", "Product group", "Base unit", 'Calendar', 'Purchasing group', 
                            'Special procurement type', 'Plant information record', 'Information record number', 
@@ -55,6 +73,13 @@ def load_inference_data(filepath: str) -> pd.DataFrame:
     return new_data
 
 def predict_with_random_forest(filepath: str, model_path: str):
+    """
+    Load the trained RFC model and make predictions on new data.
+
+    Args:
+        filepath (str): Path to the inference data CSV file.
+        model_path (str): Path to the saved RFC model file.
+    """
     with open(model_path, 'rb') as file:
         rf_classifier = pickle.load(file)
 

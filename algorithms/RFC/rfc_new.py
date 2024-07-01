@@ -9,6 +9,15 @@ import pickle
 import shap
 
 def handle_zeros(data):
+    """
+    Replace zero values with NaN in specified columns.
+
+    Args:
+        data (pd.DataFrame): DataFrame containing the data.
+
+    Returns:
+        pd.DataFrame: DataFrame with zeros replaced by NaN in specified columns.
+    """
     columns_with_zero_as_missing = [
         "Fulfillment time", "Material master time", "Plant processing time",
         "Total quantity", "Total value", "Fixed contract 1", "Fixed contract 2"
@@ -17,6 +26,16 @@ def handle_zeros(data):
     return data
 
 def load_data(train_filepath, val_filepath):
+    """
+    Load and preprocess the training and validation data.
+
+    Args:
+        train_filepath (str): Path to the training data CSV file.
+        val_filepath (str): Path to the validation data CSV file.
+
+    Returns:
+        tuple: Tuple containing preprocessed training and validation features and labels.
+    """
     train_df = pd.read_csv(train_filepath, low_memory=False)
     val_df = pd.read_csv(val_filepath, low_memory=False)
 
@@ -88,6 +107,15 @@ def load_data(train_filepath, val_filepath):
     return X_train, Y_train, X_val, Y_val
 
 def train_random_forest(X_train, Y_train, X_val, Y_val):
+    """
+    Train the Random Forest Classifier and evaluate its performance.
+
+    Args:
+        X_train (pd.DataFrame): Training features.
+        Y_train (pd.Series): Training labels.
+        X_val (pd.DataFrame): Validation features.
+        Y_val (pd.Series): Validation labels.
+    """
     rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
     rf_classifier.fit(X_train, Y_train)
 
