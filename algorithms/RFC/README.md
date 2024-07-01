@@ -17,7 +17,7 @@ The results and saved objects are stored in separate folders within the RFC algo
 2. Run `rfc_inference.py` to get predictions and save results.
 
 ## Results
-- **Validation accuracy** on the supervised dataset: **95.8%**
+- **Validation accuracy** on the supervised test dataset: **95.8%**
 - **Validation accuracy** on the human labelled anamolies dataset: **94.97%**
 
 ## Feature importance
