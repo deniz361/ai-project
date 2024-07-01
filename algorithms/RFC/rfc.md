@@ -21,5 +21,5 @@ The results and saved objects are stored in separate folders within the RFC algo
 - **Validation accuracy** on the human labelled anamolies dataset: **94.97%**
 
 ## Feature importance
-![image](algorithms/RFC/SHAP_random_forest.png)
+![image](SHAP_random_forest.png)
 
