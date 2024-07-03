@@ -11,6 +11,11 @@ Iforest supervised cannot handle categorial data and make bad spuervised predict
 XGBoost supervised makes good predictions but is probably overfitting
 unsupervised Iforest and XGBoost cannot find any representiv anomalies with numerical Z Score outlier detection
 
+![image](https://github.com/deniz361/ai-project/assets/73404066/2938dadd-6385-49dc-b8b0-4c5ad7ca9f29)
+
+![image](https://github.com/deniz361/ai-project/assets/73404066/1d112526-5bd7-4470-95ce-3694f134c27c)
+
+
 ### Anomaly Ratios
 Here are the anomaly ratios for various categories, indicating the percentage of data points that significantly deviate from typical patterns:
 
