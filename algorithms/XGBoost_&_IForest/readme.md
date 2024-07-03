@@ -1,9 +1,9 @@
 ### Preprocesinng 
 For xgboost Iforest we used train.csv for the training. 
 
-### Implementation unsupervised
-In the unsupervised approach of XBoost and Iforest. We used the Z Score to fin anomalies in the numeraical data.
-When a numerical point is to 99% out of the mean value it is labeled as anomaly and trianed with anomaly label.
+### Implementation 
+In the unsupervised approach of XBoost and Iforest. We used the Z Score to find anomalies in the numeraical data.
+When a numerical point is to 99% out of the mean value it is labeled as anomaly and trained with anomaly label.
 The unsupervised were trained with labeled anomlies from train.csv, while the unsupervied were trained with Z Score of the numerical columns. 
 
 ### Takeways 
