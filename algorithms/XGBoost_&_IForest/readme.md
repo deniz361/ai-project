@@ -1,3 +1,16 @@
+### Preprocesinng 
+For xgboost Iforest we used train.csv for the training. 
+
+### Implementation unsupervised
+In the unsupervised approach of XBoost and Iforest. We used the Z Score to fin anomalies in the numeraical data.
+When a numerical point is to 99% out of the mean value it is labeled as anomaly and trianed with anomaly label.
+The unsupervised were trained with labeled anomlies from train.csv, while the unsupervied were trained with Z Score of the numerical columns. 
+
+### Takeways 
+Iforest supervised cannot handle categorial data and make bad spuervised predictions.
+XGBoost supervised makes good predictions but is probably overfitting
+unsupervised Iforest and XGBoost cannot find any representiv anomalies with numerical Z Score outlier detection
+
 ### Anomaly Ratios
 Here are the anomaly ratios for various categories, indicating the percentage of data points that significantly deviate from typical patterns:
 
